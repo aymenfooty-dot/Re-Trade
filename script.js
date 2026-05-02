@@ -1,78 +1,72 @@
-<script>
-    window.onload = () => {
-        const savedId = localStorage.getItem('retrade_id');
-        const savedName = localStorage.getItem('retrade_user');
-        if (savedId || savedName) renderDashboard(savedId || savedName, !!savedId);
-    };
+    window.onload = function() {
+    const session = localStorage.getItem('retrade_session');
+    if (session) {
+        const data = JSON.parse(session);
+        startHub(data.val, data.isId);
+    }
+};
 
-    function linkAccount() {
-        const input = document.getElementById('profile-url-input').value.trim();
-        const btn = document.getElementById('link-btn');
-        const loader = document.getElementById('search-loader');
-        
-        if (input.length < 2) {
-            alert("Please enter a username or profile link.");
+function handleLogin() {
+    const val = document.getElementById('user-entry').value.trim();
+    const btn = document.getElementById('login-btn');
+    const load = document.getElementById('loading-box');
+
+    if (val.length < 2) return alert("Please enter a username.");
+
+    btn.classList.add('hidden');
+    load.classList.remove('hidden');
+
+    const idMatch = val.match(/\/users\/(\d+)\//);
+    
+    setTimeout(() => {
+        let isId = false;
+        let cleanVal = val;
+
+        if (idMatch) {
+            cleanVal = idMatch[1];
+            isId = true;
+        } else if (val.includes("/") || val.includes(".")) {
+            alert("Please enter an existing Roblox profile!");
+            btn.classList.remove('hidden');
+            load.classList.add('hidden');
             return;
         }
 
-        btn.classList.add('hidden');
-        loader.classList.remove('hidden');
+        localStorage.setItem('retrade_session', JSON.stringify({val: cleanVal, isId: isId}));
+        startHub(cleanVal, isId);
+    }, 1200);
+}
 
-        // Check if it's a Link or a Username
-        const idMatch = input.match(/\/users\/(\d+)\//);
-        
-        setTimeout(() => {
-            if (idMatch) {
-                // It's a link - use the ID
-                const userId = idMatch[1];
-                localStorage.setItem('retrade_id', userId);
-                localStorage.removeItem('retrade_user'); // Clear old name
-                renderDashboard(userId, true);
-            } else if (!input.includes("/") && !input.includes(".")) {
-                // It looks like a username
-                localStorage.setItem('retrade_user', input);
-                localStorage.removeItem('retrade_id'); // Clear old ID
-                renderDashboard(input, false);
-            } else {
-                // It's a broken link or invalid text
-                alert("Please enter an existing Roblox profile or valid username.");
-                btn.classList.remove('hidden');
-                loader.classList.add('hidden');
-            }
-        }, 1200);
-    }
+function startHub(id, isId) {
+    document.getElementById('auth-screen').classList.add('hidden');
+    const hub = document.getElementById('main-interface');
+    hub.classList.remove('hidden');
+    setTimeout(() => hub.style.opacity = "1", 50);
 
-    function renderDashboard(identifier, isId) {
-        document.getElementById('login-screen').classList.add('hidden');
-        const site = document.getElementById('main-site');
-        site.classList.remove('hidden');
-        setTimeout(() => site.style.opacity = "1", 100);
-        
-        // Determine which API URL to use based on if we have an ID or Username
-        const avatarUrl = isId 
-            ? `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&userId=${identifier}`
-            : `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&username=${identifier}`;
-        
-        document.getElementById('nav-avatar').src = avatarUrl;
-        document.getElementById('profile-avatar').src = avatarUrl;
-        
-        const displayName = isId ? "Verified ID User" : identifier;
-        document.getElementById('profile-name').innerText = displayName;
-        
-        if(document.getElementById('user-id-display')) {
-            document.getElementById('user-id-display').innerText = isId ? `Linked ID: ${identifier}` : `Username: ${identifier}`;
-        }
-    }
+    const img = isId 
+        ? `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&userId=${id}`
+        : `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&username=${id}`;
 
-    function showTab(tab) {
-        ['trade', 'market', 'profile'].forEach(t => {
-            document.getElementById('section-' + t).classList.add('hidden');
-            document.getElementById('tab-btn-' + t).classList.remove('active-tab', 'text-white');
-            document.getElementById('tab-btn-' + t).classList.add('text-slate-500');
-        });
-        document.getElementById('section-' + tab).classList.remove('hidden');
-        document.getElementById('tab-btn-' + tab).classList.add('active-tab', 'text-white');
-    }
+    document.getElementById('nav-pfp').src = img;
+    document.getElementById('main-avatar').src = img;
+    document.getElementById('profile-name').innerText = isId ? "ID User" : id;
+}
 
-    function logout() { localStorage.clear(); location.reload(); }
-</script>
+function setGame(name) {
+    document.getElementById('game-blox').classList.remove('active');
+    document.getElementById('game-demon').classList.remove('active');
+    if (name === 'Blox Fruits') document.getElementById('game-blox').classList.add('active');
+    else document.getElementById('game-demon').classList.add('active');
+    document.getElementById('current-game-title').innerText = name + " Trade";
+}
+
+function changeView(view) {
+    ['trade', 'market', 'user'].forEach(v => {
+        document.getElementById('view-' + v).classList.add('hidden');
+        document.getElementById('tab-' + v).classList.remove('active-tab', 'text-white');
+    });
+    document.getElementById('view-' + view).classList.remove('hidden');
+    document.getElementById('tab-' + view).classList.add('active-tab', 'text-white');
+}
+
+function logout() { localStorage.clear(); location.reload(); }
