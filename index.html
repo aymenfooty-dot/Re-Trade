@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -14,119 +14,125 @@
 </head>
 <body class="min-h-screen">
 
-    <div id="login-screen" class="fixed inset-0 z-[50] flex items-center justify-center bg-[#05070a] p-6">
+    <div id="auth-page" class="fixed inset-0 z-50 flex items-center justify-center bg-[#05070a] p-6">
         <div class="glass w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl border-indigo-500/20">
             <div class="text-center mb-8">
                 <h1 class="text-3xl font-black italic tracking-tighter text-white uppercase">RE:<span class="text-indigo-500">TRADE</span></h1>
-                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Link Account</p>
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Connect Account</p>
             </div>
 
             <div class="space-y-6">
                 <div class="space-y-2">
                     <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Roblox Username or Profile Link</label>
-                    <input type="text" id="main-user-input" placeholder="Enter here..." 
+                    <input type="text" id="user-input-field" placeholder="Enter here..." 
                            class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-5 py-4 focus:border-indigo-500 text-white outline-none font-medium text-xs">
                 </div>
                 
-                <button onclick="processLogin()" id="action-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4.5 rounded-2xl font-black uppercase tracking-widest transition shadow-xl active:scale-95 text-xs text-white">
+                <button onclick="startVerification()" id="connect-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4.5 rounded-2xl font-black uppercase tracking-widest transition shadow-xl active:scale-95 text-xs text-white">
                     Connect Account
                 </button>
 
-                <div id="loading-spinner" class="hidden text-center space-y-4">
+                <div id="wait-msg" class="hidden text-center space-y-4">
                     <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                    <p class="text-[10px] font-mono text-indigo-400 font-bold uppercase italic">Validating Profile...</p>
+                    <p class="text-[10px] font-mono text-indigo-400 font-bold uppercase italic">Searching Profile...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="main-site" class="hidden opacity-0 transition-opacity duration-500">
+    <div id="dashboard-page" class="hidden opacity-0 transition-opacity duration-500">
         <nav class="glass sticky top-0 z-10 px-6 py-4 flex justify-between items-center border-b border-white/5">
             <div class="text-xl font-black italic tracking-tighter">RE:<span class="text-indigo-500">TRADE</span></div>
             <div class="w-10 h-10 rounded-full border border-indigo-400/50 overflow-hidden bg-slate-900">
-                <img id="nav-avatar" src="" class="w-full h-full object-cover">
+                <img id="top-avatar" src="" class="w-full h-full object-cover">
             </div>
         </nav>
 
         <main class="p-6 text-center">
             <div class="py-12">
                 <div class="w-24 h-24 mx-auto rounded-full border-4 border-indigo-500/20 p-1 mb-4">
-                    <img id="profile-avatar" src="" class="w-full h-full object-cover rounded-full">
+                    <img id="main-avatar" src="" class="w-full h-full object-cover rounded-full">
                 </div>
-                <h2 id="display-name" class="text-xl font-black text-white italic uppercase tracking-tighter">Verified User</h2>
-                <p id="display-id" class="text-[9px] font-mono text-slate-500 mt-1 uppercase tracking-widest">Active</p>
+                <h2 id="user-title" class="text-xl font-black text-white italic uppercase tracking-tighter">Verified User</h2>
+                <p id="user-subtitle" class="text-[9px] font-mono text-slate-500 mt-1 uppercase tracking-widest italic">Connected</p>
             </div>
-            <button onclick="logout()" class="w-full max-w-xs mx-auto bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest">Sign Out</button>
+            
+            <button onclick="signout()" class="w-full max-w-xs mx-auto bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest">Sign Out</button>
         </main>
     </div>
 
     <script>
-        // Check for existing login on page load
-        window.onload = () => {
-            const savedData = localStorage.getItem('retrade_session');
-            if (savedData) {
-                const data = JSON.parse(savedData);
-                showDashboard(data.val, data.isId);
+        // Check for session
+        window.onload = function() {
+            const session = localStorage.getItem('retrade_session_v3');
+            if (session) {
+                const data = JSON.parse(session);
+                openDash(data.id, data.isId);
             }
         };
 
-        function processLogin() {
-            const val = document.getElementById('main-user-input').value.trim();
-            const btn = document.getElementById('action-btn');
-            const loader = document.getElementById('loading-spinner');
+        function startVerification() {
+            const val = document.getElementById('user-input-field').value.trim();
+            const btn = document.getElementById('connect-btn');
+            const loader = document.getElementById('wait-msg');
 
             if (val.length < 2) {
-                alert("Please enter a valid username or link.");
+                alert("Please enter a username or a valid profile link.");
                 return;
             }
 
+            // UI feedback
             btn.classList.add('hidden');
             loader.classList.remove('hidden');
 
-            // Detect if it's a URL/Link or just a Name
-            const idFromLink = val.match(/\/users\/(\d+)\//);
+            // Logic to find ID or Username
+            const linkMatch = val.match(/\/users\/(\d+)\//);
             
             setTimeout(() => {
-                let isId = false;
-                let finalVal = val;
+                let idFound = false;
+                let finalStr = val;
 
-                if (idFromLink) {
-                    finalVal = idFromLink[1];
-                    isId = true;
+                if (linkMatch) {
+                    finalStr = linkMatch[1];
+                    idFound = true;
                 } else if (val.includes("/") || val.includes(".")) {
-                    // It has link-style characters but isn't a valid Roblox link
+                    // Invalid link error
                     alert("Please enter an existing Roblox profile!");
                     btn.classList.remove('hidden');
                     loader.classList.add('hidden');
                     return;
                 }
 
-                // Save and Show
-                localStorage.setItem('retrade_session', JSON.stringify({val: finalVal, isId: isId}));
-                showDashboard(finalVal, isId);
+                // Save to local storage
+                localStorage.setItem('retrade_session_v3', JSON.stringify({id: finalStr, isId: idFound}));
+                
+                // Open the site
+                openDash(finalStr, idFound);
             }, 1000);
         }
 
-        function showDashboard(identifier, isId) {
-            document.getElementById('login-screen').classList.add('hidden');
-            const site = document.getElementById('main-site');
-            site.classList.remove('hidden');
-            setTimeout(() => site.style.opacity = "1", 50);
+        function openDash(uid, isId) {
+            document.getElementById('auth-page').classList.add('hidden');
+            const dash = document.getElementById('dashboard-page');
+            dash.classList.remove('hidden');
+            setTimeout(() => dash.style.opacity = "1", 50);
 
-            const avatarUrl = isId 
-                ? `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&userId=${identifier}`
-                : `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&username=${identifier}`;
+            // Roblox Headshot API
+            const pfp = isId 
+                ? `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&userId=${uid}`
+                : `https://www.roblox.com/headshot-thumbnail/image?width=150&height=150&format=png&username=${uid}`;
 
-            document.getElementById('nav-avatar').src = avatarUrl;
-            document.getElementById('profile-avatar').src = avatarUrl;
-            document.getElementById('display-name').innerText = isId ? "Verified User" : identifier;
-            document.getElementById('display-id').innerText = isId ? `ID: ${identifier}` : `User: ${identifier}`;
+            document.getElementById('top-avatar').src = pfp;
+            document.getElementById('main-avatar').src = pfp;
+            document.getElementById('user-title').innerText = isId ? "Verified User" : uid;
+            document.getElementById('user-subtitle').innerText = isId ? "ID: " + uid : "Username: " + uid;
         }
 
-        function logout() {
+        function signout() {
             localStorage.clear();
             location.reload();
         }
     </script>
 </body>
 </html>
+               
