@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Re:trade | Instant Access</title>
+    <title>Re:trade | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -19,26 +19,25 @@
 
     <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center bg-[#05070a] p-6">
         <div class="glass w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl border-indigo-500/20">
-            <div id="auth-content">
-                <div class="text-center mb-10">
-                    <h1 class="text-3xl font-black italic tracking-tighter text-white uppercase">RE:<span class="text-indigo-500">TRADE</span></h1>
-                    <p class="text-slate-500 text-xs font-bold uppercase tracking-[0.3em] mt-2">Instant Account Search</p>
-                </div>
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-black italic tracking-tighter text-white uppercase">RE:<span class="text-indigo-500">TRADE</span></h1>
+                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Database Search</p>
+            </div>
 
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Roblox Username</label>
-                        <input type="text" id="username-input" placeholder="Search Username..." 
-                               class="w-full bg-slate-900/80 border border-slate-700 rounded-2xl px-6 py-4 focus:border-indigo-500 text-white outline-none font-bold text-base transition-all">
-                    </div>
-                    <button onclick="instantSearch()" id="search-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4.5 rounded-2xl font-black uppercase tracking-widest transition shadow-xl shadow-indigo-600/20 active:scale-95">
-                        Find Account
-                    </button>
-                    
-                    <div id="search-loader" class="hidden text-center space-y-4 py-2">
-                        <div class="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-                        <p id="search-status" class="text-sm font-mono text-indigo-400 font-bold loading-dots">Connecting to API</p>
-                    </div>
+            <div class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Roblox Username</label>
+                    <input type="text" id="username-input" placeholder="Exact Username..." 
+                           class="w-full bg-slate-900 border border-slate-700 rounded-2xl px-6 py-4 focus:border-indigo-500 text-white outline-none font-bold text-base">
+                </div>
+                
+                <button onclick="findRobloxAccount()" id="search-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 py-4.5 rounded-2xl font-black uppercase tracking-widest transition shadow-xl active:scale-95">
+                    Find Account
+                </button>
+
+                <div id="search-loader" class="hidden text-center space-y-4">
+                    <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p class="text-xs font-mono text-indigo-400 font-bold loading-dots">COMMUNICATING WITH ROBLOX</p>
                 </div>
             </div>
         </div>
@@ -47,7 +46,7 @@
     <div id="main-site" class="hidden opacity-0 transition-opacity duration-500">
         <nav class="glass sticky top-0 z-50 px-6 py-4 flex justify-between items-center border-b border-white/5">
             <div class="text-xl font-black italic tracking-tighter">RE:<span class="text-indigo-500">TRADE</span></div>
-            <div class="w-10 h-10 rounded-full border border-indigo-400/50 overflow-hidden bg-slate-900 shadow-lg shadow-indigo-500/10">
+            <div class="w-10 h-10 rounded-full border border-indigo-400/50 overflow-hidden bg-slate-900 shadow-lg shadow-indigo-500/20">
                 <img id="nav-avatar" src="" class="w-full h-full object-cover">
             </div>
         </nav>
@@ -61,74 +60,80 @@
         <main class="p-6">
             <section id="section-trade" class="space-y-6">
                 <div class="glass rounded-3xl p-6 border border-white/5">
-                    <h3 class="font-black text-lg mb-4 italic">Create Request</h3>
+                    <h3 class="font-black text-lg mb-4 italic uppercase">Create Trade</h3>
                     <div class="space-y-4">
-                        <input type="text" placeholder="Target User..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-indigo-500">
-                        <textarea class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 h-28 text-sm outline-none" placeholder="Your Offer (e.g. 5,000 Robux)"></textarea>
-                        <button onclick="alert('Trade Signal Sent!')" class="w-full bg-indigo-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest">Send Trade</button>
+                        <input type="text" placeholder="Opponent Username..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm font-bold outline-none">
+                        <textarea class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 h-28 text-sm outline-none" placeholder="Items/Robux details..."></textarea>
+                        <button onclick="alert('Trade Signal Sent!')" class="w-full bg-indigo-600 py-4 rounded-xl font-black uppercase text-xs tracking-widest">Initiate Exchange</button>
                     </div>
                 </div>
             </section>
 
-            <section id="section-market" class="hidden space-y-4 text-center">
-                <div class="glass rounded-2xl p-8 border border-white/5">
-                    <div class="text-indigo-500 text-3xl mb-2 animate-pulse">📡</div>
-                    <p class="text-xs font-black uppercase tracking-widest text-slate-500">Live Market Scan</p>
-                    <p class="text-xl font-black text-white mt-2">1,402 Active Trades</p>
+            <section id="section-market" class="hidden text-center py-10">
+                <div class="glass rounded-3xl p-8 border border-white/5">
+                    <p class="text-indigo-400 font-black mb-2 uppercase italic tracking-widest">Global Feed</p>
+                    <p class="text-xs text-slate-500">Scanning for recent transactions...</p>
                 </div>
             </section>
 
-            <section id="section-profile" class="hidden space-y-6">
-                <div class="text-center py-6">
-                    <div class="w-24 h-24 mx-auto rounded-full border-4 border-indigo-500/20 p-1 mb-4">
+            <section id="section-profile" class="hidden space-y-6 text-center">
+                <div class="py-6">
+                    <div class="w-28 h-28 mx-auto rounded-full border-4 border-indigo-500/20 p-1 mb-4 shadow-2xl shadow-indigo-500/10">
                         <img id="profile-avatar" src="" class="w-full h-full object-cover rounded-full">
                     </div>
                     <h2 id="profile-name" class="text-2xl font-black text-white italic uppercase tracking-tight">Username</h2>
-                    <p class="text-[10px] font-bold text-emerald-500 uppercase mt-1 tracking-widest">Public Account Found</p>
+                    <p class="text-[10px] font-bold text-emerald-500 uppercase mt-2 tracking-[0.2em]">Verified Roblox Link</p>
                 </div>
-                <button onclick="logout()" class="w-full bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest">Sign Out</button>
+                <button onclick="logout()" class="w-full bg-red-500/10 border border-red-500/20 text-red-500 py-4 rounded-2xl font-black uppercase text-xs tracking-widest">Log Out</button>
             </section>
         </main>
     </div>
 
     <script>
-        let currentUser = localStorage.getItem('retrade_user') || "";
-
-        window.onload = () => { if (currentUser) renderSite(currentUser); };
-
-        async function instantSearch() {
-            const input = document.getElementById('username-input');
-            const name = input.value.trim();
+        // FUNCTION: FIND ACCOUNT & FETCH AVATAR
+        async function findRobloxAccount() {
+            const usernameInput = document.getElementById('username-input');
+            const username = usernameInput.value.trim();
             
-            if (name.length < 3) return alert("Enter valid name");
+            if (username.length < 3) {
+                alert("Please enter a valid Roblox username.");
+                return;
+            }
 
-            // UI Switch
-            input.parentElement.classList.add('hidden');
+            // UI Feedback
             document.getElementById('search-btn').classList.add('hidden');
             document.getElementById('search-loader').classList.remove('hidden');
 
-            const status = document.getElementById('search-status');
+            // Roblox API Image Request
+            const pfpUrl = `https://www.roblox.com/headshot-thumbnail/image?height=150&width=150&format=png&username=${username}`;
 
-            // Fake Search Steps
-            status.innerText = "Locating User";
-            await new Promise(r => setTimeout(r, 1200));
-            
-            status.innerText = "Fetching Thumbnail";
-            await new Promise(r => setTimeout(r, 1200));
+            // Create a temporary image object to "test" the Roblox URL
+            const img = new Image();
+            img.src = pfpUrl;
 
-            localStorage.setItem('retrade_user', name);
-            renderSite(name);
+            img.onload = function() {
+                // Image loaded successfully
+                localStorage.setItem('retrade_user', username);
+                localStorage.setItem('retrade_avatar', pfpUrl);
+                renderDashboard(username, pfpUrl);
+            };
+
+            img.onerror = function() {
+                alert("Could not load Roblox data. Please try again.");
+                document.getElementById('search-btn').classList.remove('hidden');
+                document.getElementById('search-loader').classList.add('hidden');
+            };
         }
 
-        function renderSite(name) {
+        function renderDashboard(name, avatar) {
             document.getElementById('login-screen').classList.add('hidden');
             const site = document.getElementById('main-site');
             site.classList.remove('hidden');
-            setTimeout(() => site.classList.remove('opacity-0'), 100);
+            setTimeout(() => site.style.opacity = "1", 100);
             
-            const imgUrl = `https://www.roblox.com/headshot-thumbnail/image?height=150&width=150&format=png&username=${name}`;
-            document.getElementById('nav-avatar').src = imgUrl;
-            document.getElementById('profile-avatar').src = imgUrl;
+            // Apply User Info
+            document.getElementById('nav-avatar').src = avatar;
+            document.getElementById('profile-avatar').src = avatar;
             document.getElementById('profile-name').innerText = name;
         }
 
@@ -141,6 +146,13 @@
             document.getElementById('section-' + tab).classList.remove('hidden');
             document.getElementById('tab-btn-' + tab).classList.add('active-tab', 'text-white');
         }
+
+        // Auto-login check
+        window.onload = () => {
+            const savedName = localStorage.getItem('retrade_user');
+            const savedAvatar = localStorage.getItem('retrade_avatar');
+            if (savedName && savedAvatar) renderDashboard(savedName, savedAvatar);
+        };
 
         function logout() { localStorage.clear(); location.reload(); }
     </script>
